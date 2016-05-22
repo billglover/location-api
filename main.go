@@ -13,6 +13,14 @@ func main() {
 	log.Println("location-api starting")
 
 	api := iris.New()
+
+	// log all incomming requests
+	api.UseFunc(func(context *iris.Context) {
+		log.Println(context.MethodString(), context.PathString())
+		context.Next()
+	})
+
+	// the following methods have been implemented
 	api.Get("/location", handlers.GetLocation)
 
 	// the following methods are not implemented
