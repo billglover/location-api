@@ -31,7 +31,6 @@ func main() {
 	api.Get("/location", handlers.GetLocation)
 
 	// the following methods are not implemented
-	api.Get("/location", handlers.NotImplemented)
 	api.Post("/location", handlers.NotImplemented)
 	api.Put("/location", handlers.NotImplemented)
 	api.Delete("/location", handlers.NotImplemented)
