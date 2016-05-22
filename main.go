@@ -15,17 +15,7 @@ func main() {
 	api := iris.New()
 
 	// add a logging function to log requests
-	api.UseFunc(func(context *iris.Context) {
-		context.Next() // jumping ahead here allows us to log response information
-		ip := context.RemoteAddr()
-		status := context.Response.StatusCode()
-		method := context.MethodString()
-		path := context.PathString()
-
-		// sample log format
-		// 2016/05/22 13:43:10.968341 ::1 PATCH /location 501
-		log.Println(ip, method, path, status)
-	})
+	api.UseFunc(handlers.LogHandler)
 
 	// the following methods have been implemented
 	api.Get("/location", handlers.GetLocation)
