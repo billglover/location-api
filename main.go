@@ -14,10 +14,17 @@ func main() {
 
 	api := iris.New()
 
-	// log all incomming requests
+	// add a logging function to log requests
 	api.UseFunc(func(context *iris.Context) {
-		log.Println(context.MethodString(), context.PathString())
-		context.Next()
+		context.Next() // jumping ahead here allows us to log response information
+		ip := context.RemoteAddr()
+		status := context.Response.StatusCode()
+		method := context.MethodString()
+		path := context.PathString()
+
+		// sample log format
+		// 2016/05/22 13:43:10.968341 ::1 PATCH /location 501
+		log.Println(ip, method, path, status)
 	})
 
 	// the following methods have been implemented
@@ -31,5 +38,8 @@ func main() {
 	api.Head("/location", handlers.NotImplemented)
 	api.Patch("/location", handlers.NotImplemented)
 	api.Options("/location", handlers.NotImplemented)
+
+	// start the server
+	log.Println("listening on :8080")
 	api.Listen(":8080")
 }
