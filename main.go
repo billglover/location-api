@@ -14,5 +14,14 @@ func main() {
 
 	api := iris.New()
 	api.Get("/location", handlers.GetLocation)
+
+	// the following methods are not implemented
+	api.Get("/location", handlers.NotImplemented)
+	api.Post("/location", handlers.NotImplemented)
+	api.Put("/location", handlers.NotImplemented)
+	api.Delete("/location", handlers.NotImplemented)
+	api.Head("/location", handlers.NotImplemented)
+	api.Patch("/location", handlers.NotImplemented)
+	api.Options("/location", handlers.NotImplemented)
 	api.Listen(":8080")
 }
