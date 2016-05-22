@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/billglover/location-api/handlers"
 	"github.com/kataras/iris"
 	"log"
 )
@@ -12,10 +13,6 @@ func main() {
 	log.Println("location-api starting")
 
 	api := iris.New()
-	api.Get("/location", getLocation)
+	api.Get("/location", handlers.GetLocation)
 	api.Listen(":8080")
-}
-
-func getLocation(context *iris.Context) {
-	context.Write("Lcation object returned here")
 }
