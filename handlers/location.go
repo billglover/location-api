@@ -57,3 +57,7 @@ func (lh LocationHandler) Get(context *iris.Context) {
 	// if we found a Location object return it as JSON
 	context.JSON(iris.StatusOK, location)
 }
+
+func (lh LocationHandler) Post(context *iris.Context) {
+	context.JSON(iris.StatusNotImplemented, iris.StatusText(iris.StatusNotImplemented))
+}

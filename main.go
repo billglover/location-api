@@ -33,10 +33,10 @@ func main() {
 
 	// the following methods have been implemented
 	api.Get("/location/:id", handlers.NewLocationHandler(dbSession, dbName).Get)
+	api.Post("/location", handlers.NewLocationHandler(dbSession, dbName).Post)
 
 	// the following methods are not implemented
 	api.Get("/location", handlers.NotImplemented)
-	api.Post("/location", handlers.NotImplemented)
 	api.Put("/location", handlers.NotImplemented)
 	api.Delete("/location", handlers.NotImplemented)
 	api.Head("/location", handlers.NotImplemented)
