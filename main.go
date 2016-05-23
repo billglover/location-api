@@ -19,7 +19,7 @@ func main() {
 	log.Println("location-api starting")
 
 	// connect to the MongoDB database
-	dbSession, err := mgo.Dial("localhost")
+	dbSession, err := mgo.Dial("192.168.99.100:32768")
 	if err != nil {
 		log.Panic(err)
 	}
