@@ -5,21 +5,28 @@ import (
 	"github.com/kataras/iris"
 	"gopkg.in/mgo.v2"
 	"log"
+	"os"
 )
 
 func main() {
 	var (
 		dbName  = "test"
 		address = ":8080"
+		dbUrl   = "localhost:27017"
 	)
+
+	if os.Getenv("DB_URL") != "" {
+		dbUrl = os.Getenv("DB_URL")
+	}
 
 	// prefix log entries with date and time (with microseconds) e.g.
 	// 2016/05/22 11:11:47.152342 location-api starting
 	log.SetFlags(log.Ldate | log.Lmicroseconds)
 	log.Println("location-api starting")
+	log.Println("connecting to MongoDB:", dbUrl)
 
 	// connect to the MongoDB database
-	dbSession, err := mgo.Dial("192.168.99.100:32768")
+	dbSession, err := mgo.Dial(dbUrl)
 	if err != nil {
 		log.Panic(err)
 	}
