@@ -59,5 +59,35 @@ func (lh LocationHandler) Get(context *iris.Context) {
 }
 
 func (lh LocationHandler) Post(context *iris.Context) {
-	context.JSON(iris.StatusNotImplemented, iris.StatusText(iris.StatusNotImplemented))
+	// get a location from the request body
+	location := models.Location{}
+	err := context.ReadJSON(&location)
+	if err != nil {
+		context.JSON(iris.StatusBadRequest, iris.StatusText(iris.StatusBadRequest))
+		return
+	}
+
+	// create an ID
+	location.Id = bson.NewObjectId()
+
+	// confirm it is valid
+	if !location.IsValid() {
+		context.JSON(iris.StatusBadRequest, iris.StatusText(iris.StatusBadRequest))
+		return
+	}
+
+	// submit to the DB
+	s := lh.session.Copy()
+	c := s.DB(lh.dbName).C(lh.collectionName)
+	defer s.Close()
+	err = c.Insert(&location)
+	if err != nil {
+		log.Println(err)
+		context.JSON(iris.StatusInternalServerError, iris.StatusText(iris.StatusInternalServerError))
+		return
+	}
+
+	// return the ID if successful
+	log.Println(location)
+	context.JSON(iris.StatusOK, location)
 }
