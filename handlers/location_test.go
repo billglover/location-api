@@ -1,4 +1,4 @@
-package location_test
+package handlers_test
 
 import (
 	"net/http"
