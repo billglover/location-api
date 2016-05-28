@@ -2,9 +2,10 @@ package main
 
 import (
 	"github.com/billglover/location-api/handlers"
-	"github.com/kataras/iris"
+	"github.com/gorilla/mux"
 	"gopkg.in/mgo.v2"
 	"log"
+	"net/http"
 	"os"
 )
 
@@ -24,6 +25,7 @@ func main() {
 	log.SetFlags(log.Ldate | log.Lmicroseconds)
 	log.Println("location-api starting")
 	log.Println("connecting to MongoDB:", dbUrl)
+	log.Println("using DB:", dbName)
 
 	// connect to the MongoDB database
 	dbSession, err := mgo.Dial(dbUrl)
@@ -32,25 +34,13 @@ func main() {
 	}
 	defer dbSession.Close()
 
-	// establish a new instance of the Iris server
-	api := iris.New()
+	router := mux.NewRouter()
 
-	// add a logging function to log requests
-	api.UseFunc(handlers.LogHandler)
-
-	// the following methods have been implemented
-	api.Get("/location/:id", handlers.NewLocationHandler(dbSession, dbName).Get)
-	api.Post("/location", handlers.NewLocationHandler(dbSession, dbName).Post)
-
-	// the following methods are not implemented
-	api.Get("/location", handlers.NotImplemented)
-	api.Put("/location", handlers.NotImplemented)
-	api.Delete("/location", handlers.NotImplemented)
-	api.Head("/location", handlers.NotImplemented)
-	api.Patch("/location", handlers.NotImplemented)
-	api.Options("/location", handlers.NotImplemented)
+	router.HandleFunc("/locations/{id}", handlers.LocationsGet).Methods("GET")
+	router.HandleFunc("/locations", handlers.LocationsPost).Methods("POST")
 
 	// start the server
 	log.Printf("listening on %s", address)
-	api.Listen(address)
+	log.Fatalln(http.ListenAndServe(address, router))
+
 }

@@ -5,8 +5,18 @@ import (
 	"github.com/kataras/iris"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"io"
 	"log"
+	"net/http"
 )
+
+func LocationsGet(w http.ResponseWriter, r *http.Request) {
+	io.WriteString(w, "Hello World")
+}
+
+func LocationsPost(w http.ResponseWriter, r *http.Request) {
+	io.WriteString(w, "Hello World")
+}
 
 // The LocationHandler struct allows us to pass in database session details
 type LocationHandler struct {
