@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/billglover/location-api/db"
 	"github.com/billglover/location-api/handlers"
 	"github.com/gorilla/mux"
 	"gopkg.in/mgo.v2"
@@ -27,11 +28,7 @@ func main() {
 	log.Println("connecting to MongoDB:", dbUrl)
 	log.Println("using DB:", dbName)
 
-	// connect to the MongoDB database
-	dbSession, err := mgo.Dial(dbUrl)
-	if err != nil {
-		log.Panic(err)
-	}
+	dbSession := CreateDbSession(dbUrl)
 	defer dbSession.Close()
 
 	router := apiRouter(dbSession)
@@ -48,3 +45,10 @@ func apiRouter(d *mgo.Session) *mux.Router {
 	return router
 }
 
+func CreateDbSession(dbUrl string) *mgo.Session {
+	dbSession, err := mgo.Dial(dbUrl)
+	if err != nil {
+		log.Panic(err)
+	}
+	return dbSession
+}
