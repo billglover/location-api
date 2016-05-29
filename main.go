@@ -34,13 +34,17 @@ func main() {
 	}
 	defer dbSession.Close()
 
-	router := mux.NewRouter()
+	router := apiRouter(dbSession)
 
-	router.HandleFunc("/locations/{id}", handlers.LocationsGet).Methods("GET")
-	router.HandleFunc("/locations", handlers.LocationsPost).Methods("POST")
-
-	// start the server
 	log.Printf("listening on %s", address)
 	log.Fatalln(http.ListenAndServe(address, router))
 
 }
+
+func apiRouter(d *mgo.Session) *mux.Router {
+	router := mux.NewRouter()
+	router.HandleFunc("/locations/{id}", db.WithDB(d, handlers.LocationsGet)).Methods("GET")
+	router.HandleFunc("/locations", db.WithDB(d, handlers.LocationsPost)).Methods("POST")
+	return router
+}
+
