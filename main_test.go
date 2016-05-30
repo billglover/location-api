@@ -37,7 +37,7 @@ var tests = []struct {
 	},
 	{
 		Method:       "GET",
-		Path:         "/locations/1234",
+		Path:         "/locations/574cb30f4bf4c8f0c6a056e8",
 		BodyContains: "",
 		Status:       http.StatusOK,
 	},
