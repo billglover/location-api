@@ -3,7 +3,7 @@ package handlers
 import (
 	"github.com/billglover/location-api/models"
 	"github.com/gorilla/context"
-	"gopkg.in/matryer/respond"
+	"gopkg.in/matryer/respond.v1"
 	"gopkg.in/mgo.v2"
 	//"gopkg.in/mgo.v2/bson"
 	"log"
