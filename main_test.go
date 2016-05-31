@@ -37,8 +37,8 @@ var tests = []struct {
 	},
 	{
 		Method:       "GET",
-		Path:         "/locations/574cb30f4bf4c8f0c6a056e8",
-		BodyContains: "",
+		Path:         "/locations/574de23b5f810df11cad3498",
+		BodyContains: "\"id\":\"574de23b5f810df11cad3498\"",
 		Status:       http.StatusOK,
 	},
 }
@@ -72,7 +72,6 @@ func TestAll(t *testing.T) {
 		assert.NoError(err)
 
 		// make assertions
-
 		assert.Contains(string(actualBody), test.BodyContains, "%s %s %s", test.Method, test.Path, "\n\tunexpected body returned")
 		assert.Equal(test.Status, response.StatusCode, "%s %s %s", test.Method, test.Path, "\n\tunexpected status code in response")
 	}

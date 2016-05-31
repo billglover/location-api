@@ -3,17 +3,28 @@ package handlers
 import (
 	"github.com/billglover/location-api/models"
 	"github.com/gorilla/context"
+	"github.com/gorilla/mux"
 	"gopkg.in/matryer/respond.v1"
 	"gopkg.in/mgo.v2"
-	//"gopkg.in/mgo.v2/bson"
+	"gopkg.in/mgo.v2/bson"
 	"log"
 	"net/http"
 )
 
 func LocationsGet(w http.ResponseWriter, r *http.Request) {
 	db := context.Get(r, "db").(*mgo.Session)
+
+	vars := mux.Vars(r)
+	id := vars["id"]
+	log.Printf("Looking for ID: %s", id)
+	if !bson.IsObjectIdHex(id) {
+		log.Printf("Invalid ID: %s", id)
+		respond.WithStatus(w, r, http.StatusNotFound)
+		return
+	}
+
 	l := &models.Location{}
-	err := db.DB("test").C("Locations").Find(nil).One(&l)
+	err := db.DB("test").C("Locations").Find(bson.M{"_id": bson.ObjectIdHex(id)}).One(&l)
 	if err != nil {
 		log.Println(err.Error())
 		respond.WithStatus(w, r, http.StatusInternalServerError)
