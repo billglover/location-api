@@ -31,9 +31,16 @@ var tests = []struct {
 	{
 		Method:       "POST",
 		Path:         "/locations",
-		Body:         strings.NewReader(`{""}`),
+		Body:         strings.NewReader(`{"name": "dave"}`),
 		BodyContains: "",
-		Status:       http.StatusNotImplemented,
+		Status:       http.StatusBadRequest,
+	},
+	{
+		Method:       "POST",
+		Path:         "/locations",
+		Body:         strings.NewReader(`{"latitude":1.1111,"longitude":2.2222,"altitude":3.3333,"horizontalAccuracy":4.4444,"verticalAccuracy":5.5555,"devicetime":"2016-06-01T07:00:00Z","description":"test location 3"}`),
+		BodyContains: "\"latitude\":1.1111,\"longitude\":2.2222,\"altitude\":3.3333,\"horizontalAccuracy\":4.4444,\"verticalAccuracy\":5.5555,\"devicetime\":\"2016-06-01T07:00:00Z\",\"description\":\"test location 3\"",
+		Status:       http.StatusCreated,
 	},
 	{
 		Method:       "GET",

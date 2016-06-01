@@ -1,12 +1,14 @@
 package handlers
 
 import (
+	"encoding/json"
 	"github.com/billglover/location-api/models"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"gopkg.in/matryer/respond.v1"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"io/ioutil"
 	"log"
 	"net/http"
 )
@@ -35,7 +37,34 @@ func LocationsGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func LocationsPost(w http.ResponseWriter, r *http.Request) {
-	respond.WithStatus(w, r, http.StatusNotImplemented)
+	l := models.Location{}
+	body, errBody := ioutil.ReadAll(r.Body)
+	if errBody != nil {
+		log.Println(errBody)
+		respond.WithStatus(w, r, http.StatusInternalServerError)
+		return
+	}
+
+	errJson := json.Unmarshal(body, &l)
+	if errJson != nil || l.IsInvalid() {
+		log.Println(errBody)
+		log.Println(l)
+		respond.WithStatus(w, r, http.StatusBadRequest)
+		return
+	}
+
+	// give our new Location an ID
+	l.Id = bson.NewObjectId()
+
+	db := context.Get(r, "db").(*mgo.Session)
+	errDb := db.DB("test").C("Locations").Insert(l)
+	if errDb != nil {
+		log.Println(errDb)
+		respond.WithStatus(w, r, http.StatusInternalServerError)
+		return
+	}
+
+	respond.With(w, r, http.StatusCreated, l)
 }
 
 // The LocationHandler struct allows us to pass in database session details
