@@ -9,7 +9,7 @@ services:
 
 before_script:
   - sleep 15
-  - ./insert_test_data.sh
+  - ./scripts/insert_test_data.sh
 
 after_script:
-  - ./remove_test_data.sh
+  - ./scripts/remove_test_data.sh
