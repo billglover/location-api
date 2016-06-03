@@ -19,33 +19,33 @@ var tests = []struct {
 	Method       string
 	Path         string
 	Body         io.Reader
-	BodyContains string
+	BodyContains []string
 	Status       int
 }{
 	{
 		Method:       "GET",
 		Path:         "/locations",
-		BodyContains: "",
-		Status:       http.StatusNotFound,
+		BodyContains: []string{"574cb30f4bf4c8f0c6a056e8", "574de23b5f810df11cad3498"},
+		Status:       http.StatusOK,
 	},
 	{
 		Method:       "POST",
 		Path:         "/locations",
 		Body:         strings.NewReader(`{"name": "dave"}`),
-		BodyContains: "",
+		BodyContains: []string{""},
 		Status:       http.StatusBadRequest,
 	},
 	{
 		Method:       "POST",
 		Path:         "/locations",
 		Body:         strings.NewReader(`{"latitude":1.1111,"longitude":2.2222,"altitude":3.3333,"horizontalAccuracy":4.4444,"verticalAccuracy":5.5555,"devicetime":"2016-06-01T07:00:00Z","description":"test location 3"}`),
-		BodyContains: "\"latitude\":1.1111,\"longitude\":2.2222,\"altitude\":3.3333,\"horizontalAccuracy\":4.4444,\"verticalAccuracy\":5.5555,\"devicetime\":\"2016-06-01T07:00:00Z\",\"description\":\"test location 3\"",
+		BodyContains: []string{"\"latitude\":1.1111,\"longitude\":2.2222,\"altitude\":3.3333,\"horizontalAccuracy\":4.4444,\"verticalAccuracy\":5.5555,\"devicetime\":\"2016-06-01T07:00:00Z\",\"description\":\"test location 3\""},
 		Status:       http.StatusCreated,
 	},
 	{
 		Method:       "GET",
 		Path:         "/locations/574de23b5f810df11cad3498",
-		BodyContains: "\"id\":\"574de23b5f810df11cad3498\"",
+		BodyContains: []string{"\"id\":\"574de23b5f810df11cad3498\""},
 		Status:       http.StatusOK,
 	},
 }
@@ -79,7 +79,9 @@ func TestAll(t *testing.T) {
 		assert.NoError(err)
 
 		// make assertions
-		assert.Contains(string(actualBody), test.BodyContains, "%s %s %s", test.Method, test.Path, "\n\tunexpected body returned")
 		assert.Equal(test.Status, response.StatusCode, "%s %s %s", test.Method, test.Path, "\n\tunexpected status code in response")
+		for _, bodyContents := range test.BodyContains {
+			assert.Contains(string(actualBody), bodyContents, "%s %s %s", test.Method, test.Path, "\n\tunexpected body returned")
+		}
 	}
 }

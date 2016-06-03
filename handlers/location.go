@@ -15,12 +15,23 @@ import (
 
 func LocationsGet(w http.ResponseWriter, r *http.Request) {
 	db := context.Get(r, "db").(*mgo.Session)
+	l := []models.Location{}
+	err := db.DB("test").C("Locations").Find(bson.M{}).All(&l)
+	if err != nil {
+		log.Println(err.Error())
+		respond.WithStatus(w, r, http.StatusInternalServerError)
+		return
+	}
+	respond.With(w, r, http.StatusOK, l)
+	context.Clear(r)
+}
+
+func LocationsGetOne(w http.ResponseWriter, r *http.Request) {
+	db := context.Get(r, "db").(*mgo.Session)
 
 	vars := mux.Vars(r)
 	id := vars["id"]
-	log.Printf("Looking for ID: %s", id)
 	if !bson.IsObjectIdHex(id) {
-		log.Printf("Invalid ID: %s", id)
 		respond.WithStatus(w, r, http.StatusNotFound)
 		return
 	}
