@@ -11,12 +11,16 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func LocationsGet(w http.ResponseWriter, r *http.Request) {
+	page, _     := strconv.Atoi(r.URL.Query().Get("page"))		// on error page is set to 0
+	per_page, _ := strconv.Atoi(r.URL.Query().Get("per_page"))	// on error per_page is set to 0
+
 	db := context.Get(r, "db").(*mgo.Session)
 	l := []models.Location{}
-	err := db.DB("test").C("Locations").Find(bson.M{}).All(&l)
+	err := db.DB("test").C("Locations").Find(bson.M{}).Skip(page*per_page).Limit(per_page).All(&l)
 	if err != nil {
 		log.Println(err.Error())
 		respond.WithStatus(w, r, http.StatusInternalServerError)
