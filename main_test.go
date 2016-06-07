@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"encoding/json"
 )
 
 var (
@@ -20,12 +21,34 @@ var tests = []struct {
 	Path         string
 	Body         io.Reader
 	BodyContains []string
+	BodyCount	 int
 	Status       int
 }{
 	{
 		Method:       "GET",
 		Path:         "/locations",
 		BodyContains: []string{"574cb30f4bf4c8f0c6a056e8", "574de23b5f810df11cad3498"},
+		Status:       http.StatusOK,
+	},
+	{
+		Method:       "GET",
+		Path:         "/locations?page=1&per_page=1",
+		BodyContains: []string{""},
+		BodyCount:	  1,
+		Status:       http.StatusOK,
+	},
+	{
+		Method:       "GET",
+		Path:         "/locations?page=2&per_page=1",
+		BodyContains: []string{""},
+		BodyCount:	  1,
+		Status:       http.StatusOK,
+	},
+	{
+		Method:       "GET",
+		Path:         "/locations?per_page=2",
+		BodyContains: []string{""},
+		BodyCount:	  2,
 		Status:       http.StatusOK,
 	},
 	{
@@ -77,6 +100,16 @@ func TestAll(t *testing.T) {
 		// extract the body of the response
 		actualBody, err := ioutil.ReadAll(response.Body)
 		assert.NoError(err)
+
+		// convert body into an array of structs
+		if test.BodyCount > 0 {
+			var jsonObjs interface{}
+	 		errJson := json.Unmarshal([]byte(actualBody), &jsonObjs)
+	 		objSlice, ok := jsonObjs.([]interface{})
+	 		assert.Equal(true, ok, "cannot convert response to JSON object")
+			assert.NoError(errJson)
+			assert.Equal(test.BodyCount, len(objSlice), "%s %s %s", test.Method, test.Path, "\n\tunexpected number of objects returned")
+		}
 
 		// make assertions
 		assert.Equal(test.Status, response.StatusCode, "%s %s %s", test.Method, test.Path, "\n\tunexpected status code in response")
