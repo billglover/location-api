@@ -52,7 +52,7 @@ func LocationsGetOne(w http.ResponseWriter, r *http.Request) {
 }
 
 func LocationsPost(w http.ResponseWriter, r *http.Request) {
-	l := models.Location{}
+	var ls []models.Location
 	body, errBody := ioutil.ReadAll(r.Body)
 	if errBody != nil {
 		log.Println(errBody)
@@ -60,23 +60,29 @@ func LocationsPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	errJson := json.Unmarshal(body, &l)
-	if errJson != nil || l.IsInvalid() {
-		log.Printf("Unable to convert body to valid Location object. Received: %s", l)
+	errJson := json.Unmarshal(body, &ls)
+	if errJson != nil {
+		log.Printf("Unable to convert body to valid Location object. Received: %s", ls)
 		respond.WithStatus(w, r, http.StatusBadRequest)
 		return
 	}
 
-	// give our new Location an ID
-	l.Id = bson.NewObjectId()
-
 	db := context.Get(r, "db").(*mgo.Session)
-	errDb := db.DB("test").C("Locations").Insert(l)
-	if errDb != nil {
-		log.Println(errDb)
-		respond.WithStatus(w, r, http.StatusInternalServerError)
-		return
+
+	for i, _ := range ls {
+		if ls[i].IsInvalid() {
+			log.Printf("Unable to convert body to valid Location object. Received: %s", ls)
+			respond.WithStatus(w, r, http.StatusBadRequest)
+			return		
+		}
+		ls[i].Id = bson.NewObjectId()
+		errDb := db.DB("test").C("Locations").Insert(ls[i])
+		if errDb != nil {
+			log.Println(errDb)
+			respond.WithStatus(w, r, http.StatusInternalServerError)
+			return
+		}
 	}
 
-	respond.With(w, r, http.StatusCreated, l)
+	respond.With(w, r, http.StatusCreated, ls)
 }

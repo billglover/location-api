@@ -32,6 +32,8 @@ func (l *Location) IsInvalid() bool {
 	return !l.IsValid()
 }
 
+
+
 var TestLocation = Location{
 	Id:                 bson.NewObjectId(),
 	Latitude:           1.111,
