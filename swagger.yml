@@ -36,14 +36,55 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Location'
+          examples: 
+            application/json:
+             - id: "575c77445604c10007e9de0c"
+               latitude: 51.5354627689761
+               longitude: -0.202750840374221
+               altitude: 77.7268905639648
+               horizontalAccuracy: 1844.97373451518
+               verticalAccuracy: 10.0
+               devicetime: "2016-06-11T21:40:30.915Z"
+               description: "location"
+             - id: "575c76f65604c10007e9de0b"
+               latitude: 51.5548425469157
+               longitude: -0.197759843647492
+               horizontalAccuracy: 70.4187888570983
+               deviceTime: "2016-06-11T21:33:21.862Z"
+               description: "visit"
     post:
       description: |
         Creates a `Location` object.
+      parameters:
+        - name: pet
+          in: body
+          description: An array of Locations that you want to post
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Location'
+          required: true
       responses:
         201:
           description: Created
           schema:
             $ref: '#/definitions/Location'
+          examples: 
+            application/json:
+             - id: "575c77445604c10007e9de0c"
+               latitude: 51.5354627689761
+               longitude: -0.202750840374221
+               altitude: 77.7268905639648
+               horizontalAccuracy: 1844.97373451518
+               verticalAccuracy: 10.0
+               devicetime: "2016-06-11T21:40:30.915Z"
+               description: "location"
+             - id: "575c76f65604c10007e9de0b"
+               latitude: 51.5548425469157
+               longitude: -0.197759843647492
+               horizontalAccuracy: 70.4187888570983
+               deviceTime: "2016-06-11T21:33:21.862Z"
+               description: "visit"
         500:
           description: Internal Server Error
           schema:
@@ -71,6 +112,16 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Location'
+          examples: 
+            application/json:
+             - id: "575c77445604c10007e9de0c"
+               latitude: 51.5354627689761
+               longitude: -0.202750840374221
+               altitude: 77.7268905639648
+               horizontalAccuracy: 1844.97373451518
+               verticalAccuracy: 10.0
+               devicetime: "2016-06-11T21:40:30.915Z"
+               description: "location"
 
 
 definitions:
