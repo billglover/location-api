@@ -20,7 +20,7 @@ func LocationsGet(w http.ResponseWriter, r *http.Request) {
 
 	db := context.Get(r, "db").(*mgo.Session)
 	l := []models.Location{}
-	err := db.DB("test").C("Locations").Find(bson.M{}).Skip(page*per_page).Limit(per_page).All(&l)
+	err := db.DB("test").C("Locations").Find(bson.M{}).Sort("-_id").Skip(page*per_page).Limit(per_page).All(&l)
 	if err != nil {
 		log.Println(err.Error())
 		respond.WithStatus(w, r, http.StatusInternalServerError)
