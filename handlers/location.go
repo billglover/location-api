@@ -43,9 +43,14 @@ func LocationsGetOne(w http.ResponseWriter, r *http.Request) {
 	l := &models.Location{}
 	err := db.DB("test").C("Locations").Find(bson.M{"_id": bson.ObjectIdHex(id)}).One(&l)
 	if err != nil {
-		log.Println(err.Error())
-		respond.WithStatus(w, r, http.StatusInternalServerError)
-		return
+		log.Println("LocationGetOne", id, err.Error())
+		if err.Error() == "not found" {
+			respond.WithStatus(w, r, http.StatusNotFound)
+			return
+		} else {
+			respond.WithStatus(w, r, http.StatusInternalServerError)
+			return	
+		}		
 	}
 	respond.With(w, r, http.StatusOK, l)
 	context.Clear(r)

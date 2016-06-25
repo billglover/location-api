@@ -27,7 +27,7 @@ var tests = []struct {
 	{
 		Method:       "GET",
 		Path:         "/locations",
-		BodyContains: []string{"574cb30f4bf4c8f0c6a056e8", "574de23b5f810df11cad3498"},
+		BodyContains: []string{"latitude", "longitude"},
 		Status:       http.StatusOK,
 	},
 	{
