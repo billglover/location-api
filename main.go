@@ -21,6 +21,10 @@ func main() {
 		dbUrl = os.Getenv("DB_URL")
 	}
 
+	if os.Getenv("DB_NAME") != "" {
+		dbName = os.Getenv("DB_NAME")
+	}
+
 	// prefix log entries with date and time (with microseconds) e.g.
 	// 2016/05/22 11:11:47.152342 location-api starting
 	log.SetFlags(log.Ldate | log.Lmicroseconds)
