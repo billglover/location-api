@@ -45,6 +45,7 @@ func apiRouter(d *mgo.Session) *mux.Router {
 	router.HandleFunc("/locations", db.WithDB(d, handlers.LocationsGet)).Methods("GET")
 	router.HandleFunc("/locations/{id}", db.WithDB(d, handlers.LocationsGetOne)).Methods("GET")
 	router.HandleFunc("/locations", db.WithDB(d, handlers.LocationsPost)).Methods("POST")
+	router.PathPrefix("/").Handler(http.FileServer(http.Dir("./static/")))
 	return router
 }
 
