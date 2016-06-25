@@ -12,17 +12,12 @@ import (
 
 func main() {
 	var (
-		dbName  = "test"
 		address = ":8080"
-		dbUrl   = "localhost:27017"
+		dbUrl   = "localhost:27017/test"
 	)
 
 	if os.Getenv("DB_URL") != "" {
 		dbUrl = os.Getenv("DB_URL")
-	}
-
-	if os.Getenv("DB_NAME") != "" {
-		dbName = os.Getenv("DB_NAME")
 	}
 
 	if os.Getenv("LISTEN_ADDR") != "" {
@@ -34,7 +29,6 @@ func main() {
 	log.SetFlags(log.Ldate | log.Lmicroseconds)
 	log.Println("location-api starting")
 	log.Println("connecting to MongoDB:", dbUrl)
-	log.Println("using DB:", dbName)
 
 	dbSession := CreateDbSession(dbUrl)
 	defer dbSession.Close()

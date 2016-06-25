@@ -20,7 +20,7 @@ func LocationsGet(w http.ResponseWriter, r *http.Request) {
 
 	db := context.Get(r, "db").(*mgo.Session)
 	l := []models.Location{}
-	err := db.DB("test").C("Locations").Find(bson.M{}).Sort("-_id").Skip(page*per_page).Limit(per_page).All(&l)
+	err := db.DB("").C("Locations").Find(bson.M{}).Sort("-_id").Skip(page*per_page).Limit(per_page).All(&l)
 	if err != nil {
 		log.Println(err.Error())
 		respond.WithStatus(w, r, http.StatusInternalServerError)
@@ -41,7 +41,7 @@ func LocationsGetOne(w http.ResponseWriter, r *http.Request) {
 	}
 
 	l := &models.Location{}
-	err := db.DB("test").C("Locations").Find(bson.M{"_id": bson.ObjectIdHex(id)}).One(&l)
+	err := db.DB("").C("Locations").Find(bson.M{"_id": bson.ObjectIdHex(id)}).One(&l)
 	if err != nil {
 		log.Println("LocationGetOne", id, err.Error())
 		if err.Error() == "not found" {
@@ -81,7 +81,7 @@ func LocationsPost(w http.ResponseWriter, r *http.Request) {
 			return		
 		}
 		ls[i].Id = bson.NewObjectId()
-		errDb := db.DB("test").C("Locations").Insert(ls[i])
+		errDb := db.DB("").C("Locations").Insert(ls[i])
 		if errDb != nil {
 			log.Println(errDb)
 			respond.WithStatus(w, r, http.StatusInternalServerError)
