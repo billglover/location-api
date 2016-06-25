@@ -12,7 +12,14 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 )
+
+func today() time.Time {
+	t := time.Now()
+    year, month, day := t.Date()
+    return time.Date(year, month, day, 0, 0, 0, 0, t.Location())
+}
 
 func LocationsGet(w http.ResponseWriter, r *http.Request) {
 	page, _     := strconv.Atoi(r.URL.Query().Get("page"))		// on error page is set to 0
@@ -20,7 +27,8 @@ func LocationsGet(w http.ResponseWriter, r *http.Request) {
 
 	db := context.Get(r, "db").(*mgo.Session)
 	l := []models.Location{}
-	err := db.DB("").C("Locations").Find(bson.M{}).Sort("-_id").Skip(page*per_page).Limit(per_page).All(&l)
+	err := db.DB("").C("Locations").Find(bson.M{"horizontalAccuracy": bson.M{"$lt": 100}, "description": "location", "devicetime": bson.M{"$gte": today()}}).Sort("-_id").Skip((page-1)*per_page).Limit(per_page).All(&l)
+
 	if err != nil {
 		log.Println(err.Error())
 		respond.WithStatus(w, r, http.StatusInternalServerError)
