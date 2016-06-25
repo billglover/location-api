@@ -13,15 +13,16 @@ import (
 )
 
 var (
-	dbName 			 = "test"
-	dbUrl  			 = "localhost:27017"
+	dbUrl  			 = "localhost:27017/test"
 	serverUrl string
 	validLocationId string
 )
 
-
-
 func TestMain(m *testing.M) {
+	if os.Getenv("DB_URL") != "" {
+		dbUrl = os.Getenv("DB_URL")
+	}
+
 	dbSession := CreateDbSession(dbUrl)
 	defer dbSession.Close()
 
