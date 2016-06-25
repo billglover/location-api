@@ -2,126 +2,132 @@ package main
 
 import (
 	"github.com/stretchr/testify/assert"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"encoding/json"
+	"os"
+	"regexp"
 )
 
 var (
-	dbName = "test"
-	dbUrl  = "localhost:27017"
+	dbName 			 = "test"
+	dbUrl  			 = "localhost:27017"
+	serverUrl string
+	validLocationId string
 )
 
-var tests = []struct {
-	Method       string
-	Path         string
-	Body         io.Reader
-	BodyContains []string
-	BodyCount	 int
-	Status       int
-}{
-	{
-		Method:       "GET",
-		Path:         "/locations",
-		BodyContains: []string{"latitude", "longitude"},
-		Status:       http.StatusOK,
-	},
-	{
-		Method:       "GET",
-		Path:         "/locations?page=1&per_page=1",
-		BodyContains: []string{""},
-		BodyCount:	  1,
-		Status:       http.StatusOK,
-	},
-	{
-		Method:       "GET",
-		Path:         "/locations?page=2&per_page=1",
-		BodyContains: []string{""},
-		BodyCount:	  1,
-		Status:       http.StatusOK,
-	},
-	{
-		Method:       "GET",
-		Path:         "/locations?per_page=2",
-		BodyContains: []string{""},
-		BodyCount:	  2,
-		Status:       http.StatusOK,
-	},
-	{
-		Method:       "POST",
-		Path:         "/locations",
-		Body:         strings.NewReader(`{"name": "dave"}`),
-		BodyContains: []string{""},
-		Status:       http.StatusBadRequest,
-	},
-	{
-		Method:       "POST",
-		Path:         "/locations",
-		Body:         strings.NewReader(`[{"name": "dave"}]`),
-		BodyContains: []string{""},
-		Status:       http.StatusBadRequest,
-	},
-	{
-		Method:       "POST",
-		Path:         "/locations",
-		Body:         strings.NewReader(`[{"latitude":1.1111,"longitude":2.2222,"altitude":3.3333,"horizontalAccuracy":4.4444,"verticalAccuracy":5.5555,"devicetime":"2016-06-01T07:00:00Z","description":"test location 3"}]`),
-		BodyContains: []string{"\"latitude\":1.1111,\"longitude\":2.2222,\"altitude\":3.3333,\"horizontalAccuracy\":4.4444,\"verticalAccuracy\":5.5555,\"devicetime\":\"2016-06-01T07:00:00Z\",\"description\":\"test location 3\""},
-		Status:       http.StatusCreated,
-	},
-	{
-		Method:       "GET",
-		Path:         "/locations/574de23b5f810df11cad3498",
-		BodyContains: []string{"\"id\":\"574de23b5f810df11cad3498\""},
-		Status:       http.StatusOK,
-	},
-}
 
-func TestAll(t *testing.T) {
-	assert := assert.New(t)
 
-	// create a DB Session
-	// TODO: this needs to be able to take a database name
+func TestMain(m *testing.M) {
 	dbSession := CreateDbSession(dbUrl)
 	defer dbSession.Close()
 
-	// create a Router
 	router := apiRouter(dbSession)
 
-	// create a test server
 	server := httptest.NewServer(router)
+	serverUrl = server.URL
 	defer server.Close()
 
-	// execute our tests
-	for _, test := range tests {
+	os.Exit(m.Run())
+}
 
-		// create and execute an HTTP request
-		r, err := http.NewRequest(test.Method, server.URL+test.Path, test.Body)
-		assert.NoError(err)
-		response, err := http.DefaultClient.Do(r)
-		assert.NoError(err)
+func TestGetLocations(t *testing.T) {
+	assert := assert.New(t)
 
-		// extract the body of the response
-		actualBody, err := ioutil.ReadAll(response.Body)
-		assert.NoError(err)
+	req, err := http.NewRequest("GET", serverUrl + "/locations", nil)
+	assert.NoError(err)
+	res, err := http.DefaultClient.Do(req)
+	assert.NoError(err)
 
-		// convert body into an array of structs
-		if test.BodyCount > 0 {
-			var jsonObjs interface{}
-	 		errJson := json.Unmarshal([]byte(actualBody), &jsonObjs)
-	 		objSlice, ok := jsonObjs.([]interface{})
-	 		assert.Equal(true, ok, "cannot convert response to JSON object")
-			assert.NoError(errJson)
-			assert.Equal(test.BodyCount, len(objSlice), "%s %s %s", test.Method, test.Path, "\n\tunexpected number of objects returned")
-		}
+	body, err := ioutil.ReadAll(res.Body)
+	assert.NoError(err)
 
-		// make assertions
-		assert.Equal(test.Status, response.StatusCode, "%s %s %s", test.Method, test.Path, "\n\tunexpected status code in response")
-		for _, bodyContents := range test.BodyContains {
-			assert.Contains(string(actualBody), bodyContents, "%s %s %s", test.Method, test.Path, "\n\tunexpected body returned")
-		}
-	}
+	assert.Contains(string(body), "latitude", "%s", "unexpected body returned")
+	assert.Contains(string(body), "longitude", "%s", "unexpected body returned")
+	assert.Equal(http.StatusOK, res.StatusCode, "%s", "unexpected status code")
+}
+
+func TestGetLocationsPaging(t *testing.T) {
+	assert := assert.New(t)
+
+	req, err := http.NewRequest("GET", serverUrl + "/locations?page=1&per_page=1", nil)
+	assert.NoError(err)
+	res, err := http.DefaultClient.Do(req)
+	assert.NoError(err)
+
+	body, err := ioutil.ReadAll(res.Body)
+	assert.NoError(err)
+
+	assert.Contains(string(body), "latitude", "%s", "unexpected body returned")
+	assert.Contains(string(body), "longitude", "%s", "unexpected body returned")
+	assert.Equal(http.StatusOK, res.StatusCode, "%s", "unexpected status code")
+
+	var jsonObjs interface{}
+	errJson := json.Unmarshal([]byte(body), &jsonObjs)
+	objSlice, ok := jsonObjs.([]interface{})
+	assert.Equal(true, ok, "cannot convert response to JSON object")
+	assert.NoError(errJson)
+	assert.Equal(1, len(objSlice), "%s", "unexpected number of objects returned")
+}
+
+func TestPostInvalidLocation(t *testing.T) {
+	assert := assert.New(t)
+
+	userJson := `{"state": "invalid", "response": 500}`
+    reader := strings.NewReader(userJson)
+
+	req, err := http.NewRequest("POST", serverUrl + "/locations", reader)
+	assert.NoError(err)
+	res, err := http.DefaultClient.Do(req)
+	assert.NoError(err)
+
+	body, err := ioutil.ReadAll(res.Body)
+	assert.NoError(err)
+
+	assert.Contains(string(body), "code", "%s", "unexpected body returned")
+	assert.Contains(string(body), "status", "%s", "unexpected body returned")
+	assert.Contains(string(body), "Bad Request", "%s", "unexpected body returned")
+	assert.Equal(http.StatusBadRequest, res.StatusCode, "%s", "unexpected status code")
+}
+
+func TestPostValidLocation(t *testing.T) {
+	assert := assert.New(t)
+
+	userJson := `[{"latitude":1.1111,"longitude":2.2222,"altitude":3.3333,"horizontalAccuracy":4.4444,"verticalAccuracy":5.5555,"devicetime":"2016-06-01T07:00:00Z","description":"test location 3"}]`
+    reader := strings.NewReader(userJson)
+
+	req, err := http.NewRequest("POST", serverUrl + "/locations", reader)
+	assert.NoError(err)
+	res, err := http.DefaultClient.Do(req)
+	assert.NoError(err)
+
+	body, err := ioutil.ReadAll(res.Body)
+	assert.NoError(err)
+
+	assert.Contains(string(body), "id", "%s", "unexpected body returned")
+	assert.Equal(http.StatusCreated, res.StatusCode, "%s", "unexpected status code")
+
+	re := regexp.MustCompile("\"id\":\"([a-zA-Z0-9]+)\"")
+	validLocationId = re.FindStringSubmatch(string(body))[1]
+	assert.NotNil(validLocationId)
+}
+
+func TestGetOneLocation(t *testing.T) {
+	assert := assert.New(t)
+
+	assert.NotNil(validLocationId)
+	req, err := http.NewRequest("GET", serverUrl + "/locations/" + validLocationId, nil)
+	assert.NoError(err)
+	res, err := http.DefaultClient.Do(req)
+	assert.NoError(err)
+
+	body, err := ioutil.ReadAll(res.Body)
+	assert.NoError(err)
+
+	assert.Contains(string(body), "id", "%s", "unexpected body returned")
+	assert.Contains(string(body), validLocationId, "%s", "unexpected body returned")
+	assert.Equal(http.StatusOK, res.StatusCode, "%s", "unexpected status code")
 }

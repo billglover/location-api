@@ -67,7 +67,7 @@ func LocationsPost(w http.ResponseWriter, r *http.Request) {
 
 	errJson := json.Unmarshal(body, &ls)
 	if errJson != nil {
-		log.Printf("Unable to convert body to valid Location object. Received: %s", ls)
+		//log.Printf("Unable to convert body to valid Location object. Received: %s", ls)
 		respond.WithStatus(w, r, http.StatusBadRequest)
 		return
 	}
@@ -76,7 +76,7 @@ func LocationsPost(w http.ResponseWriter, r *http.Request) {
 
 	for i, _ := range ls {
 		if ls[i].IsInvalid() {
-			log.Printf("Unable to convert body to valid Location object. Received: %s", ls)
+			//log.Printf("Unable to convert body to valid Location object. Received: %s", ls)
 			respond.WithStatus(w, r, http.StatusBadRequest)
 			return		
 		}
