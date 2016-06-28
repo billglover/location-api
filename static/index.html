@@ -29,7 +29,10 @@
 
 		var xhr = new XMLHttpRequest();
 		//xhr.open("GET", "https://locationapi.localtunnel.me/locations", false);
-		xhr.open("GET", "/locations?page=1&per_page=500", false);
+		var d = new Date();
+		d.setHours(0,0,0,0);
+		var midnight = d.toISOString()
+		xhr.open("GET", "/locations?page=1&per_page=500&time_from=" + midnight, false);
 		xhr.send();
 
 		coordinates = [];
