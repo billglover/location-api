@@ -37,18 +37,15 @@ func LocationsGet(w http.ResponseWriter, r *http.Request) {
 
 	if time_from_string != "" {
 		time_from, _ := time.Parse(time.RFC3339, time_from_string)	
-		log.Println("time_from: ", time_from)
 		time_range["$gte"] = time_from
 	}
 	if time_to_string != "" {
 		time_to, _ := time.Parse(time.RFC3339, time_to_string)
-		log.Println("time_to: ", time_to)
 		time_range["$lte"] = time_to
 	}
 	if time_to_string != "" || time_from_string != "" {
 		f["devicetime"] = time_range
 	}
-	log.Println(f)
 
 
 	db := context.Get(r, "db").(*mgo.Session)
