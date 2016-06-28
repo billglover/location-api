@@ -17,6 +17,7 @@ var (
 	dbUrl  			 = "localhost:27017/test"
 	serverUrl string
 	validLocationId string
+	validVisitId string
 )
 
 func TestMain(m *testing.M) {
@@ -112,9 +113,15 @@ func TestPostValidLocation(t *testing.T) {
 	assert.Contains(string(body), "id", "%s", "unexpected body returned")
 	assert.Equal(http.StatusCreated, res.StatusCode, "%s", "unexpected status code")
 
+	// capture Location ID
 	re := regexp.MustCompile("\"id\":\"([a-zA-Z0-9]+)\"")
-	validLocationId = re.FindStringSubmatch(string(body))[1]
+	matches := re.FindStringSubmatch(string(body))
 	assert.NotNil(validLocationId)
+	assert.NotZero(len(matches), "%s", "unable to identify valid location ID")
+	if len(matches) != 0 {
+		validLocationId = matches[1]
+		assert.NotNil(validLocationId)
+	}
 }
 
 func TestGetOneLocation(t *testing.T) {
@@ -181,4 +188,131 @@ func TestGetLocationsFrom(t *testing.T) {
 	assert.Equal(true, ok, "cannot convert response to JSON object")
 	assert.NoError(errJson)
 	assert.NotEqual(0, len(objSlice), "%s", "unexpected number of objects returned")
+}
+
+/*
+ *	Tests for Visits
+ */
+func TestGetVisits(t *testing.T) {
+	assert := assert.New(t)
+
+	req, err := http.NewRequest("GET", serverUrl + "/visits", nil)
+	assert.NoError(err)
+	res, err := http.DefaultClient.Do(req)
+	assert.NoError(err)
+
+	body, err := ioutil.ReadAll(res.Body)
+	assert.NoError(err)
+
+	assert.NotNil(body)
+	assert.Equal(http.StatusNotImplemented, res.StatusCode, "%s", "unexpected status code")
+}
+
+func TestGetVisitsPaging(t *testing.T) {
+	assert := assert.New(t)
+
+	req, err := http.NewRequest("GET", serverUrl + "/visits?page=1&per_page=1", nil)
+	assert.NoError(err)
+	res, err := http.DefaultClient.Do(req)
+	assert.NoError(err)
+
+	body, err := ioutil.ReadAll(res.Body)
+	assert.NoError(err)
+
+	assert.NotNil(body)
+	assert.Equal(http.StatusNotImplemented, res.StatusCode, "%s", "unexpected status code")
+}
+
+func TestPostInvalidVisit(t *testing.T) {
+	assert := assert.New(t)
+
+	userJson := `{"state": "invalid", "response": 500}`
+    reader := strings.NewReader(userJson)
+
+	req, err := http.NewRequest("POST", serverUrl + "/visits", reader)
+	assert.NoError(err)
+	res, err := http.DefaultClient.Do(req)
+	assert.NoError(err)
+
+	body, err := ioutil.ReadAll(res.Body)
+	assert.NoError(err)
+
+	assert.NotNil(body)
+	assert.Equal(http.StatusNotImplemented, res.StatusCode, "%s", "unexpected status code")
+}
+
+func TestPostValidVisit(t *testing.T) {
+	assert := assert.New(t)
+
+	userJson := `[{"latitude":1.1111,"longitude":2.2222,"horizontalAccuracy":4.4444,"arrivalTime":"2016-06-01T07:00:00Z","departureTime":"2016-06-01T07:10:00Z","description":"visit"}]`
+    reader := strings.NewReader(userJson)
+
+	req, err := http.NewRequest("POST", serverUrl + "/visits", reader)
+	assert.NoError(err)
+	res, err := http.DefaultClient.Do(req)
+	assert.NoError(err)
+
+	body, err := ioutil.ReadAll(res.Body)
+	assert.NoError(err)
+
+	assert.NotNil(body)
+	assert.Equal(http.StatusNotImplemented, res.StatusCode, "%s", "unexpected status code")
+
+	// capture Visit ID
+	re := regexp.MustCompile("\"id\":\"([a-zA-Z0-9]+)\"")
+	matches := re.FindStringSubmatch(string(body))
+	assert.NotZero(len(matches), "%s", "unable to identify valid visit ID")
+	if len(matches) != 0 {
+		validLocationId = matches[1]
+		assert.NotNil(validVisitId)
+	}
+}
+
+func TestGetOneVisit(t *testing.T) {
+	assert := assert.New(t)
+
+	assert.NotNil(validVisitId)
+	req, err := http.NewRequest("GET", serverUrl + "/visits/" + validVisitId, nil)
+	assert.NoError(err)
+	res, err := http.DefaultClient.Do(req)
+	assert.NoError(err)
+
+	body, err := ioutil.ReadAll(res.Body)
+	assert.NoError(err)
+
+	assert.NotNil(body)
+	assert.Equal(http.StatusNotImplemented, res.StatusCode, "%s", "unexpected status code")
+}
+
+func TestGetVisitsFromTo(t *testing.T) {
+	assert := assert.New(t)
+
+	time_from_string := url.QueryEscape("2016-06-01T06:00:00Z")
+	time_to_string := url.QueryEscape("2016-06-01T07:00:30Z")
+	req, err := http.NewRequest("GET", serverUrl + "/visits?time_from=" + time_from_string + "&time_to=" + time_to_string, nil)
+	assert.NoError(err)
+	res, err := http.DefaultClient.Do(req)
+	assert.NoError(err)
+
+	body, err := ioutil.ReadAll(res.Body)
+	assert.NoError(err)
+
+	assert.NotNil(body)
+	assert.Equal(http.StatusNotImplemented, res.StatusCode, "%s", "unexpected status code")
+}
+
+func TestGetVisitsFrom(t *testing.T) {
+	assert := assert.New(t)
+
+	time_from_string := url.QueryEscape("2016-06-01T06:00:00Z")
+	req, err := http.NewRequest("GET", serverUrl + "/visits?time_from=" + time_from_string, nil)
+	assert.NoError(err)
+	res, err := http.DefaultClient.Do(req)
+	assert.NoError(err)
+
+	body, err := ioutil.ReadAll(res.Body)
+	assert.NoError(err)
+
+	assert.NotNil(body)
+	assert.Equal(http.StatusNotImplemented, res.StatusCode, "%s", "unexpected status code")
 }
