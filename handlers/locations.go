@@ -15,12 +15,6 @@ import (
 	"time"
 )
 
-func today() time.Time {
-	t := time.Now()
-    year, month, day := t.Date()
-    return time.Date(year, month, day, 0, 0, 0, 0, t.Location())
-}
-
 func LocationsGet(w http.ResponseWriter, r *http.Request) {
 	page, _     := strconv.Atoi(r.URL.Query().Get("page"))		// on error page is set to 0
 	per_page, _ := strconv.Atoi(r.URL.Query().Get("per_page"))	// on error per_page is set to 0
