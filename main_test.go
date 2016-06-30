@@ -205,7 +205,11 @@ func TestGetVisits(t *testing.T) {
 	assert.NoError(err)
 
 	assert.NotNil(body)
-	assert.Equal(http.StatusNotImplemented, res.StatusCode, "%s", "unexpected status code")
+	assert.Contains(string(body), "latitude", "%s", "unexpected body returned")
+	assert.Contains(string(body), "longitude", "%s", "unexpected body returned")
+	assert.Contains(string(body), "arrivalTime", "%s", "unexpected body returned")
+	assert.Contains(string(body), "departureTime", "%s", "unexpected body returned")
+	assert.Equal(http.StatusOK, res.StatusCode, "%s", "unexpected status code")
 }
 
 func TestGetVisitsPaging(t *testing.T) {
@@ -219,8 +223,18 @@ func TestGetVisitsPaging(t *testing.T) {
 	body, err := ioutil.ReadAll(res.Body)
 	assert.NoError(err)
 
-	assert.NotNil(body)
-	assert.Equal(http.StatusNotImplemented, res.StatusCode, "%s", "unexpected status code")
+	assert.Contains(string(body), "latitude", "%s", "unexpected body returned")
+	assert.Contains(string(body), "longitude", "%s", "unexpected body returned")
+	assert.Contains(string(body), "arrivalTime", "%s", "unexpected body returned")
+	assert.Contains(string(body), "departureTime", "%s", "unexpected body returned")
+	assert.Equal(http.StatusOK, res.StatusCode, "%s", "unexpected status code")
+
+	var jsonObjs interface{}
+	errJson := json.Unmarshal([]byte(body), &jsonObjs)
+	objSlice, ok := jsonObjs.([]interface{})
+	assert.Equal(true, ok, "cannot convert response to JSON object")
+	assert.NoError(errJson)
+	assert.Equal(1, len(objSlice), "%s", "unexpected number of objects returned")
 }
 
 func TestPostInvalidVisit(t *testing.T) {
@@ -288,8 +302,8 @@ func TestGetOneVisit(t *testing.T) {
 func TestGetVisitsFromTo(t *testing.T) {
 	assert := assert.New(t)
 
-	time_from_string := url.QueryEscape("2016-06-01T06:00:00Z")
-	time_to_string := url.QueryEscape("2016-06-01T07:00:30Z")
+	time_from_string := url.QueryEscape("2016-06-01T05:00:00Z")
+	time_to_string := url.QueryEscape("2016-06-02T06:30:00Z")
 	req, err := http.NewRequest("GET", serverUrl + "/visits?time_from=" + time_from_string + "&time_to=" + time_to_string, nil)
 	assert.NoError(err)
 	res, err := http.DefaultClient.Do(req)
@@ -298,14 +312,24 @@ func TestGetVisitsFromTo(t *testing.T) {
 	body, err := ioutil.ReadAll(res.Body)
 	assert.NoError(err)
 
-	assert.NotNil(body)
-	assert.Equal(http.StatusNotImplemented, res.StatusCode, "%s", "unexpected status code")
+	assert.Contains(string(body), "latitude", "%s", "unexpected body returned")
+	assert.Contains(string(body), "longitude", "%s", "unexpected body returned")
+	assert.Contains(string(body), "arrivalTime", "%s", "unexpected body returned")
+	assert.Contains(string(body), "departureTime", "%s", "unexpected body returned")
+	assert.Equal(http.StatusOK, res.StatusCode, "%s", "unexpected status code")
+
+	var jsonObjs interface{}
+	errJson := json.Unmarshal([]byte(body), &jsonObjs)
+	objSlice, ok := jsonObjs.([]interface{})
+	assert.Equal(true, ok, "cannot convert response to JSON object")
+	assert.NoError(errJson)
+	assert.Equal(1, len(objSlice), "%s", "unexpected number of objects returned")
 }
 
 func TestGetVisitsFrom(t *testing.T) {
 	assert := assert.New(t)
 
-	time_from_string := url.QueryEscape("2016-06-01T06:00:00Z")
+	time_from_string := url.QueryEscape("2016-06-01T06:30:00Z")
 	req, err := http.NewRequest("GET", serverUrl + "/visits?time_from=" + time_from_string, nil)
 	assert.NoError(err)
 	res, err := http.DefaultClient.Do(req)
@@ -314,6 +338,16 @@ func TestGetVisitsFrom(t *testing.T) {
 	body, err := ioutil.ReadAll(res.Body)
 	assert.NoError(err)
 
-	assert.NotNil(body)
-	assert.Equal(http.StatusNotImplemented, res.StatusCode, "%s", "unexpected status code")
+	assert.Contains(string(body), "latitude", "%s", "unexpected body returned")
+	assert.Contains(string(body), "longitude", "%s", "unexpected body returned")
+	assert.Contains(string(body), "arrivalTime", "%s", "unexpected body returned")
+	assert.Contains(string(body), "departureTime", "%s", "unexpected body returned")
+	assert.Equal(http.StatusOK, res.StatusCode, "%s", "unexpected status code")
+
+	var jsonObjs interface{}
+	errJson := json.Unmarshal([]byte(body), &jsonObjs)
+	objSlice, ok := jsonObjs.([]interface{})
+	assert.Equal(true, ok, "cannot convert response to JSON object")
+	assert.NoError(errJson)
+	assert.Equal(2, len(objSlice), "%s", "unexpected number of objects returned")
 }
