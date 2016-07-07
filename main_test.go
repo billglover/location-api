@@ -251,8 +251,10 @@ func TestPostInvalidVisit(t *testing.T) {
 	body, err := ioutil.ReadAll(res.Body)
 	assert.NoError(err)
 
-	assert.NotNil(body)
-	assert.Equal(http.StatusNotImplemented, res.StatusCode, "%s", "unexpected status code")
+	assert.Contains(string(body), "code", "%s", "unexpected body returned")
+	assert.Contains(string(body), "status", "%s", "unexpected body returned")
+	assert.Contains(string(body), "Bad Request", "%s", "unexpected body returned")
+	assert.Equal(http.StatusBadRequest, res.StatusCode, "%s", "unexpected status code")
 }
 
 func TestPostValidVisit(t *testing.T) {
@@ -269,16 +271,16 @@ func TestPostValidVisit(t *testing.T) {
 	body, err := ioutil.ReadAll(res.Body)
 	assert.NoError(err)
 
-	assert.NotNil(body)
-	assert.Equal(http.StatusNotImplemented, res.StatusCode, "%s", "unexpected status code")
+	assert.Contains(string(body), "id", "%s", "unexpected body returned")
+	assert.Equal(http.StatusCreated, res.StatusCode, "%s", "unexpected status code")
 
-	// capture Visit ID
+	// capture Location ID
 	re := regexp.MustCompile("\"id\":\"([a-zA-Z0-9]+)\"")
 	matches := re.FindStringSubmatch(string(body))
-	// we expect the test below to be zero until implemented
-	//assert.NotZero(len(matches), "%s", "unable to identify valid visit ID")
+	assert.NotNil(validVisitId)
+	assert.NotZero(len(matches), "%s", "unable to identify valid visit ID")
 	if len(matches) != 0 {
-		validLocationId = matches[1]
+		validVisitId = matches[1]
 		assert.NotNil(validVisitId)
 	}
 }
@@ -296,7 +298,9 @@ func TestGetOneVisit(t *testing.T) {
 	assert.NoError(err)
 
 	assert.NotNil(body)
-	assert.Equal(http.StatusNotFound, res.StatusCode, "%s", "unexpected status code")
+	assert.Contains(string(body), "id", "%s", "unexpected body returned")
+	assert.Contains(string(body), validVisitId, "%s", "unexpected body returned")
+	assert.Equal(http.StatusOK, res.StatusCode, "%s", "unexpected status code")
 }
 
 func TestGetVisitsFromTo(t *testing.T) {

@@ -3,6 +3,7 @@ package handlers
 import (
 	"github.com/billglover/location-api/models"
 	"github.com/gorilla/context"
+	"github.com/gorilla/mux"
 	"gopkg.in/matryer/respond.v1"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -10,6 +11,8 @@ import (
 	"strconv"
 	"time"
 	"log"
+	"io/ioutil"
+	"encoding/json"
 )
 
 func VisitsGet(w http.ResponseWriter, r *http.Request) {
@@ -51,11 +54,64 @@ func VisitsGet(w http.ResponseWriter, r *http.Request) {
 }
 
 func VisitsGetOne(w http.ResponseWriter, r *http.Request) {
-	respond.With(w, r, http.StatusNotImplemented, nil)
+	db := context.Get(r, "db").(*mgo.Session)
+
+	vars := mux.Vars(r)
+	id := vars["id"]
+	if !bson.IsObjectIdHex(id) {
+		respond.WithStatus(w, r, http.StatusNotFound)
+		return
+	}
+
+	v := &models.Visit{}
+	err := db.DB("").C("Visits").Find(bson.M{"_id": bson.ObjectIdHex(id)}).One(&v)
+	if err != nil {
+		log.Println("VisitsGetOne", id, err.Error())
+		if err.Error() == "not found" {
+			respond.WithStatus(w, r, http.StatusNotFound)
+			return
+		} else {
+			respond.WithStatus(w, r, http.StatusInternalServerError)
+			return	
+		}		
+	}
+	respond.With(w, r, http.StatusOK, v)
 	context.Clear(r)
 }
 
 func VisitsPost(w http.ResponseWriter, r *http.Request) {
-	respond.With(w, r, http.StatusNotImplemented, nil)
+	var visits []models.Location
+	body, errBody := ioutil.ReadAll(r.Body)
+	if errBody != nil {
+		log.Println(errBody)
+		respond.WithStatus(w, r, http.StatusInternalServerError)
+		return
+	}
+
+	errJson := json.Unmarshal(body, &visits)
+	if errJson != nil {
+		//log.Printf("Unable to convert body to valid Location object. Received: %s", visits)
+		respond.WithStatus(w, r, http.StatusBadRequest)
+		return
+	}
+
+	db := context.Get(r, "db").(*mgo.Session)
+
+	for i, _ := range visits {
+		if visits[i].IsInvalid() {
+			//log.Printf("Unable to convert body to valid Location object. Received: %s", visits)
+			respond.WithStatus(w, r, http.StatusBadRequest)
+			return		
+		}
+		visits[i].Id = bson.NewObjectId()
+		errDb := db.DB("").C("Visits").Insert(visits[i])
+		if errDb != nil {
+			log.Println(errDb)
+			respond.WithStatus(w, r, http.StatusInternalServerError)
+			return
+		}
+	}
+
+	respond.With(w, r, http.StatusCreated, visits)
 	context.Clear(r)
 }
