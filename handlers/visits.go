@@ -80,7 +80,7 @@ func VisitsGetOne(w http.ResponseWriter, r *http.Request) {
 }
 
 func VisitsPost(w http.ResponseWriter, r *http.Request) {
-	var visits []models.Location
+	var visits []models.Visit
 	body, errBody := ioutil.ReadAll(r.Body)
 	if errBody != nil {
 		log.Println(errBody)
@@ -90,7 +90,7 @@ func VisitsPost(w http.ResponseWriter, r *http.Request) {
 
 	errJson := json.Unmarshal(body, &visits)
 	if errJson != nil {
-		//log.Printf("Unable to convert body to valid Location object. Received: %s", visits)
+		//log.Printf("Unable to convert body to valid Visit object. Received: %s", visits)
 		respond.WithStatus(w, r, http.StatusBadRequest)
 		return
 	}
@@ -99,7 +99,7 @@ func VisitsPost(w http.ResponseWriter, r *http.Request) {
 
 	for i, _ := range visits {
 		if visits[i].IsInvalid() {
-			//log.Printf("Unable to convert body to valid Location object. Received: %s", visits)
+			//log.Printf("Unable to convert body to valid Visit object. Received: %s", visits)
 			respond.WithStatus(w, r, http.StatusBadRequest)
 			return		
 		}

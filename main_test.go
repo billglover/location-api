@@ -260,7 +260,7 @@ func TestPostInvalidVisit(t *testing.T) {
 func TestPostValidVisit(t *testing.T) {
 	assert := assert.New(t)
 
-	userJson := `[{"latitude":1.1111,"longitude":2.2222,"horizontalAccuracy":4.4444,"arrivalTime":"2016-06-01T07:00:00Z","departureTime":"2016-06-01T07:10:00Z","description":"visit"}]`
+	userJson := `[{"latitude":1.1111,"longitude":2.2222,"horizontalAccuracy":4.4444,"arrivalTime":"2016-04-01T07:00:00Z","departureTime":"2016-04-01T07:10:00Z","description":"visit"}]`
     reader := strings.NewReader(userJson)
 
 	req, err := http.NewRequest("POST", serverUrl + "/visits", reader)
