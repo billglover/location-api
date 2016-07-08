@@ -25,22 +25,13 @@ func (l *Location) IsValid() bool {
 		return false
 	}
 
+	if l.Description != "location" {
+		return false
+	}
+
 	return true
 }
 
 func (l *Location) IsInvalid() bool {
 	return !l.IsValid()
-}
-
-
-
-var TestLocation = Location{
-	Id:                 bson.NewObjectId(),
-	Latitude:           1.111,
-	Longitude:          2.222,
-	Altitude:           3.333,
-	HorizontalAccuracy: 4.444,
-	VerticalAccuracy:   5.555,
-	DeviceTime:         time.Now(),
-	Description:        "This is a valid Location object.",
 }

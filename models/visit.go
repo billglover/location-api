@@ -21,6 +21,7 @@ func (l *Visit) IsValid() bool {
 	if l.HorizontalAccuracy == 0 { return false }
 	if l.ArrivalTime.IsZero()    { return false }
 	if l.DepartureTime.IsZero()  { return false }
+	if l.Description != "visit" { return false }
 
 	return true
 }
